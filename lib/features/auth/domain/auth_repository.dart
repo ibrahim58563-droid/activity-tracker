@@ -1,7 +1,14 @@
-/// Simple auth state — MVP uses local auth, easily swappable to Firebase.
+/// Auth repository interface — Supabase implementation.
 abstract class AuthRepository {
-  Future<bool> get isLoggedIn;
-  Future<bool> login(String email, String password);
+  bool get isLoggedIn;
+  String? get currentUserId;
+  String? get currentUserEmail;
+
+  Future<String?> login(String email, String password);
+  Future<String?> signUp(String email, String password);
   Future<void> logout();
-  Future<String?> get currentUserEmail;
+
+  /// Stream of auth state changes (true = logged in).
+  Stream<bool> get authStateChanges;
 }
+

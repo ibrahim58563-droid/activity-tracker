@@ -269,9 +269,12 @@ class StudentProfileScreen extends ConsumerWidget {
         return;
     }
 
-    repo.saveDailyRecord(updated);
-    ref.invalidate(dailyRecordProvider(studentId));
-    ref.invalidate(studentsProvider);
+    repo.saveDailyRecord(updated).then((_) {
+      ref.invalidate(dailyRecordProvider(studentId));
+      ref.invalidate(studentRecordsProvider(studentId));
+      ref.invalidate(streakProvider(studentId));
+      ref.invalidate(classInsightsProvider);
+    });
   }
 
   static const _ibadaatIcons = {

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../auth/domain/auth_providers.dart';
 import '../domain/models/student.dart';
 import '../domain/student_providers.dart';
 
@@ -66,36 +67,86 @@ class _AddEditStudentScreenState extends ConsumerState<AddEditStudentScreen> {
 
     setState(() => _isLoading = true);
 
-    final repo = ref.read(studentRepositoryProvider);
+    try {
+      final repo = ref.read(studentRepositoryProvider);
 
-    if (widget.isEditing) {
-      final existing = await repo.getStudent(widget.studentId!);
-      if (existing != null) {
-        final updated = existing.copyWith(
+      if (widget.isEditing) {
+        final existing = await repo.getStudent(widget.studentId!);
+        if (existing != null) {
+          final updated = existing.copyWith(
+            name: name,
+            levelOfStudy: _selectedLevel,
+            academicYear: _yearController.text.trim(),
+            notes: _notesController.text.trim(),
+          );
+          await repo.updateStudent(updated);
+        }
+      } else {
+        final userId = ref.read(currentUserIdProvider) ?? '';
+        final student = Student(
+          id: _uuid.v4(),
+          userId: userId,
           name: name,
           levelOfStudy: _selectedLevel,
           academicYear: _yearController.text.trim(),
           notes: _notesController.text.trim(),
+          createdAt: DateTime.now(),
         );
-        await repo.updateStudent(updated);
+        await repo.addStudent(student);
       }
-    } else {
-      final student = Student(
-        id: _uuid.v4(),
-        name: name,
-        levelOfStudy: _selectedLevel,
-        academicYear: _yearController.text.trim(),
-        notes: _notesController.text.trim(),
-        createdAt: DateTime.now(),
-      );
-      await repo.addStudent(student);
+
+      ref.invalidate(studentsProvider);
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        context.go('/students');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     }
+  }
 
-    ref.invalidate(studentsProvider);
+  Future<void> _delete() async {
+    if (!widget.isEditing) return;
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-      context.go('/students');
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Student'),
+        content: const Text(
+          'This will permanently delete this student and all their records. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await ref.read(studentRepositoryProvider).deleteStudent(widget.studentId!);
+      ref.invalidate(studentsProvider);
+      if (mounted) context.go('/students');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting student: $e')),
+        );
+      }
     }
   }
 
@@ -404,31 +455,47 @@ class _AddEditStudentScreenState extends ConsumerState<AddEditStudentScreen> {
   }
 
   Widget _buildActions(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: _isLoading ? null : _save,
-            icon: _isLoading
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.onPrimary,
-                    ),
-                  )
-                : const Icon(Icons.save, size: 18),
-            label: Text(widget.isEditing ? 'Save Changes' : 'Add Student'),
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _isLoading ? null : _save,
+                icon: _isLoading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.onPrimary,
+                        ),
+                      )
+                    : const Icon(Icons.save, size: 18),
+                label: Text(widget.isEditing ? 'Save Changes' : 'Add Student'),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.lg),
+            Expanded(
+              child: FilledButton(
+                onPressed: () => context.go('/students'),
+                child: const Text('Cancel'),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: AppSpacing.lg),
-        Expanded(
-          child: FilledButton(
-            onPressed: () => context.go('/students'),
-            child: const Text('Cancel'),
+        if (widget.isEditing) ...[
+          const SizedBox(height: AppSpacing.lg),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton.icon(
+              onPressed: _delete,
+              icon: const Icon(Icons.delete_outline, size: 18),
+              label: const Text('Delete Student'),
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

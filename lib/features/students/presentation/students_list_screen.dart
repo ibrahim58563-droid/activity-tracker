@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/widgets/top_app_bar.dart';
+import '../../auth/domain/auth_providers.dart';
 import '../domain/student_providers.dart';
 import '../domain/models/student.dart';
 import 'widgets/student_card.dart';
@@ -20,22 +21,25 @@ class StudentsListScreen extends ConsumerStatefulWidget {
 class _StudentsListScreenState extends ConsumerState<StudentsListScreen> {
   String _searchQuery = '';
 
+  Future<void> _logout() async {
+    await ref.read(authNotifierProvider.notifier).logout();
+    if (mounted) context.go('/login');
+  }
+
   @override
   Widget build(BuildContext context) {
     final studentsAsync = ref.watch(studentsProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: const ArchivistAppBar(
+      appBar: ArchivistAppBar(
         actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 20,
-              backgroundColor: AppColors.surfaceContainerHigh,
-              child: Icon(Icons.person, color: AppColors.primary, size: 20),
-            ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: AppColors.primary),
+            tooltip: 'Sign out',
+            onPressed: _logout,
           ),
+          const SizedBox(width: 8),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

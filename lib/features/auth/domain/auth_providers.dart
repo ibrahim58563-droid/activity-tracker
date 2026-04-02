@@ -1,18 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/local_auth_repository.dart';
+import '../data/supabase_auth_repository.dart';
 import '../domain/auth_repository.dart';
 
-/// Auth repository provider — swap implementation here.
+/// Auth repository provider.
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return LocalAuthRepository();
+  return SupabaseAuthRepository();
 });
 
-/// Current auth state.
-final authStateProvider = FutureProvider<bool>((ref) {
+/// Stream of auth state changes — drives router redirects.
+final authStateProvider = StreamProvider<bool>((ref) {
+  final repo = ref.watch(authRepositoryProvider);
+  return repo.authStateChanges;
+});
+
+/// Synchronous check of current login status.
+final isLoggedInProvider = Provider<bool>((ref) {
   return ref.watch(authRepositoryProvider).isLoggedIn;
 });
 
-/// Notifier for login/logout actions.
+/// Current user ID (needed to scope data per user).
+final currentUserIdProvider = Provider<String?>((ref) {
+  // Re-evaluate when auth state changes
+  ref.watch(authStateProvider);
+  return ref.watch(authRepositoryProvider).currentUserId;
+});
+
+/// Notifier for login/signup/logout actions.
 final authNotifierProvider =
     StateNotifierProvider<AuthNotifier, AsyncValue<bool>>((ref) {
   return AuthNotifier(ref.watch(authRepositoryProvider));
@@ -21,30 +34,20 @@ final authNotifierProvider =
 class AuthNotifier extends StateNotifier<AsyncValue<bool>> {
   final AuthRepository _repo;
 
-  AuthNotifier(this._repo) : super(const AsyncValue.data(false)) {
-    _checkState();
+  AuthNotifier(this._repo) : super(AsyncValue.data(_repo.isLoggedIn));
+
+  Future<String?> login(String email, String password) async {
+    state = const AsyncValue.loading();
+    final error = await _repo.login(email, password);
+    state = AsyncValue.data(error == null);
+    return error;
   }
 
-  Future<void> _checkState() async {
+  Future<String?> signUp(String email, String password) async {
     state = const AsyncValue.loading();
-    try {
-      final loggedIn = await _repo.isLoggedIn;
-      state = AsyncValue.data(loggedIn);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
-  }
-
-  Future<bool> login(String email, String password) async {
-    state = const AsyncValue.loading();
-    try {
-      final success = await _repo.login(email, password);
-      state = AsyncValue.data(success);
-      return success;
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-      return false;
-    }
+    final error = await _repo.signUp(email, password);
+    state = AsyncValue.data(error == null);
+    return error;
   }
 
   Future<void> logout() async {
@@ -52,3 +55,4 @@ class AuthNotifier extends StateNotifier<AsyncValue<bool>> {
     state = const AsyncValue.data(false);
   }
 }
+

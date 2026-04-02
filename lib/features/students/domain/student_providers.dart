@@ -1,18 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../data/local_student_repository.dart';
+import '../data/supabase_student_repository.dart';
 import '../domain/models/student.dart';
 import '../domain/models/daily_record.dart';
 import '../domain/repositories/student_repository.dart';
 
 const _uuid = Uuid();
 
-/// Student repository provider — swap implementation here.
+/// Student repository provider.
 final studentRepositoryProvider = Provider<StudentRepository>((ref) {
-  return LocalStudentRepository();
+  return SupabaseStudentRepository();
 });
 
-/// All students list.
+/// All students list (scoped to current user via RLS).
 final studentsProvider = FutureProvider<List<Student>>((ref) {
   return ref.watch(studentRepositoryProvider).getAllStudents();
 });
@@ -24,6 +24,7 @@ final studentProvider =
 });
 
 /// Today's daily record for a student.
+/// Creates a default record if none exists for today.
 final dailyRecordProvider =
     FutureProvider.family<DailyRecord, String>((ref, studentId) async {
   final repo = ref.watch(studentRepositoryProvider);
@@ -43,7 +44,7 @@ final studentRecordsProvider =
   return ref.watch(studentRepositoryProvider).getRecordsForStudent(studentId);
 });
 
-/// Computed streak for a student.
+/// Computed streak for a student — consecutive days with ≥50% completion.
 final streakProvider = FutureProvider.family<int, String>((ref, studentId) async {
   final records = await ref.watch(studentRecordsProvider(studentId).future);
   if (records.isEmpty) return 0;
@@ -52,20 +53,21 @@ final streakProvider = FutureProvider.family<int, String>((ref, studentId) async
   final sorted = [...records]..sort((a, b) => b.date.compareTo(a.date));
 
   int streak = 0;
-  DateTime expectedDate = DateTime.now();
+  final now = DateTime.now();
+  DateTime expectedDate = DateTime(now.year, now.month, now.day);
 
   for (final record in sorted) {
     final recordDate = DateTime(record.date.year, record.date.month, record.date.day);
-    final expected = DateTime(expectedDate.year, expectedDate.month, expectedDate.day);
 
-    if (recordDate == expected || recordDate == expected.subtract(const Duration(days: 1))) {
+    if (recordDate == expectedDate) {
       if (record.completionPercentage >= 0.5) {
         streak++;
-        expectedDate = recordDate.subtract(const Duration(days: 1));
+        expectedDate = expectedDate.subtract(const Duration(days: 1));
       } else {
         break;
       }
-    } else {
+    } else if (recordDate.isBefore(expectedDate)) {
+      // Gap in dates — streak broken
       break;
     }
   }
@@ -93,7 +95,7 @@ final classInsightsProvider = FutureProvider<ClassInsights>((ref) async {
   }
 
   return ClassInsights(
-    averageProgress: students.isEmpty ? 0 : totalProgress / students.length,
+    averageProgress: totalProgress / students.length,
     totalStudents: students.length,
     activeToday: activeToday,
   );

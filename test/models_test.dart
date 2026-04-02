@@ -7,6 +7,7 @@ void main() {
     test('toMap and fromMap roundtrip', () {
       final student = Student(
         id: 'abc-123',
+        userId: 'user-456',
         name: 'Zaid Al-Farabi',
         levelOfStudy: 'Intermediate Grammar',
         academicYear: '1445 AH',
@@ -18,15 +19,33 @@ void main() {
       final restored = Student.fromMap(map);
 
       expect(restored.id, student.id);
+      expect(restored.userId, student.userId);
       expect(restored.name, student.name);
       expect(restored.levelOfStudy, student.levelOfStudy);
       expect(restored.academicYear, student.academicYear);
       expect(restored.notes, student.notes);
     });
 
+    test('toMap uses snake_case keys for Supabase', () {
+      final student = Student(
+        id: 'abc-123',
+        userId: 'user-456',
+        name: 'Test',
+        createdAt: DateTime(2024, 1, 15),
+      );
+
+      final map = student.toMap();
+      expect(map.containsKey('user_id'), true);
+      expect(map.containsKey('level_of_study'), true);
+      expect(map.containsKey('academic_year'), true);
+      expect(map.containsKey('avatar_url'), true);
+      expect(map.containsKey('created_at'), true);
+    });
+
     test('copyWith preserves unchanged fields', () {
       final student = Student(
         id: 'abc-123',
+        userId: 'user-456',
         name: 'Original',
         levelOfStudy: 'Advanced',
         academicYear: '1445 AH',
@@ -37,6 +56,7 @@ void main() {
       final updated = student.copyWith(name: 'Updated');
       expect(updated.name, 'Updated');
       expect(updated.id, student.id);
+      expect(updated.userId, student.userId);
       expect(updated.levelOfStudy, student.levelOfStudy);
     });
   });
@@ -65,6 +85,23 @@ void main() {
       expect(record.completedItems, 0);
       expect(record.totalItems, greaterThan(0));
       expect(record.completionPercentage, 0.0);
+    });
+
+    test('toMap uses snake_case keys for Supabase', () {
+      final record = DailyRecord(
+        id: 'rec-1',
+        studentId: 'stu-1',
+        date: DateTime(2024, 3, 15),
+        ibadaat: {'Fajr': true},
+        quran: {},
+        habits: {},
+        study: {},
+      );
+
+      final map = record.toMap();
+      expect(map.containsKey('student_id'), true);
+      expect(map['student_id'], 'stu-1');
+      expect(map['date'], '2024-03-15');
     });
 
     test('toMap and fromMap roundtrip', () {
@@ -102,6 +139,11 @@ void main() {
       final updated = record.copyWith(ibadaat: {'Fajr': true});
       expect(updated.ibadaat['Fajr'], true);
       expect(updated.id, record.id);
+    });
+
+    test('dateKey formats correctly', () {
+      expect(DailyRecord.dateKey(DateTime(2024, 1, 5)), '2024-01-05');
+      expect(DailyRecord.dateKey(DateTime(2024, 12, 25)), '2024-12-25');
     });
   });
 }

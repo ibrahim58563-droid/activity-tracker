@@ -9,12 +9,14 @@ import '../features/students/presentation/add_edit_student_screen.dart';
 import 'shell_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authNotifierProvider);
+  final isLoggedIn = ref.watch(isLoggedInProvider);
+
+  // Also watch the stream so router rebuilds on auth changes
+  ref.watch(authStateProvider);
 
   return GoRouter(
     initialLocation: '/students',
     redirect: (context, state) {
-      final isLoggedIn = authState.valueOrNull ?? false;
       final isLoginRoute = state.matchedLocation == '/login';
 
       if (!isLoggedIn && !isLoginRoute) return '/login';

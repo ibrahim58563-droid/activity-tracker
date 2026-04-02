@@ -58,19 +58,21 @@ class DailyRecord {
     );
   }
 
+  /// Convert to Supabase row (snake_case columns, JSONB for maps).
   Map<String, dynamic> toMap() => {
         'id': id,
-        'studentId': studentId,
-        'date': _dateKey(date),
+        'student_id': studentId,
+        'date': dateKey(date),
         'ibadaat': ibadaat,
         'quran': quran,
         'habits': habits,
         'study': study,
       };
 
+  /// Create from Supabase row (snake_case columns).
   factory DailyRecord.fromMap(Map<String, dynamic> map) => DailyRecord(
         id: map['id'] as String,
-        studentId: map['studentId'] as String,
+        studentId: map['student_id'] as String,
         date: DateTime.parse(map['date'] as String),
         ibadaat: _castBoolMap(map['ibadaat']),
         quran: _castBoolMap(map['quran']),
@@ -112,7 +114,7 @@ class DailyRecord {
     );
   }
 
-  static String _dateKey(DateTime d) =>
+  static String dateKey(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   static Map<String, bool> _castBoolMap(dynamic raw) {

@@ -19,6 +19,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _isSignUpMode = false;
 
   @override
   void dispose() {
@@ -27,24 +28,61 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleSubmit() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter email and password')),
-      );
+      _showError('Please enter email and password');
+      return;
+    }
+
+    if (password.length < 6) {
+      _showError('Password must be at least 6 characters');
       return;
     }
 
     setState(() => _isLoading = true);
-    final success = await ref.read(authNotifierProvider.notifier).login(email, password);
+
+    final notifier = ref.read(authNotifierProvider.notifier);
+    final String? error;
+
+    if (_isSignUpMode) {
+      error = await notifier.signUp(email, password);
+    } else {
+      error = await notifier.login(email, password);
+    }
+
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (error != null) {
+      _showError(error);
+    } else if (_isSignUpMode) {
+      _showSuccess('Account created! Please check your email to confirm, then log in.');
+      setState(() => _isSignUpMode = false);
+    } else {
       context.go('/students');
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
+      ),
+    );
+  }
+
+  void _showSuccess(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.primaryContainer,
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   @override
@@ -59,22 +97,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: AppSpacing.lg),
-                // Logo
                 _buildLogo(),
                 const SizedBox(height: AppSpacing.sectionGap),
-                // Welcome text
                 _buildWelcomeText(),
                 const SizedBox(height: AppSpacing.xxxl),
-                // Form
                 _buildForm(),
                 const SizedBox(height: AppSpacing.xxxl),
-                // Actions
                 _buildActions(),
                 const SizedBox(height: AppSpacing.xxxl),
-                // Create account
-                _buildCreateAccount(),
+                _buildToggleMode(),
                 const SizedBox(height: AppSpacing.xxxl),
-                // Footer
                 _buildFooter(),
                 const SizedBox(height: AppSpacing.xxl),
               ],
@@ -112,7 +144,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Welcome\nBack',
+          _isSignUpMode ? 'Create\nAccount' : 'Welcome\nBack',
           style: GoogleFonts.notoSerif(
             fontSize: 48,
             fontWeight: FontWeight.w700,
@@ -122,7 +154,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
         const SizedBox(height: AppSpacing.lg),
         Text(
-          'Continue your journey through the manuscripts. Your collection awaits your scholarly touch.',
+          _isSignUpMode
+              ? 'Begin your scholarly journey. Create an account to start tracking progress.'
+              : 'Continue your journey through the manuscripts. Your collection awaits your scholarly touch.',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: AppColors.onSurfaceVariant,
                 height: 1.6,
@@ -136,8 +170,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Email field
-        _buildFieldLabel('EMAIL OR STUDENT ID'),
+        _buildFieldLabel('EMAIL'),
         const SizedBox(height: AppSpacing.xs),
         TextField(
           controller: _emailController,
@@ -150,24 +183,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
         const SizedBox(height: AppSpacing.xxl),
-        // Password field
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            _buildFieldLabel('PASSWORD'),
-            GestureDetector(
-              onTap: () {}, // Placeholder
-              child: Text(
-                'Forgot Key?',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.secondary,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ),
-          ],
-        ),
+        _buildFieldLabel('PASSWORD'),
         const SizedBox(height: AppSpacing.xs),
         TextField(
           controller: _passwordController,
@@ -176,7 +192,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 color: AppColors.onSurface,
               ),
           decoration: InputDecoration(
-            hintText: '••••••••••••',
+            hintText: _isSignUpMode ? 'Min 6 characters' : '••••••••••••',
             suffixIcon: GestureDetector(
               onTap: () => setState(() => _obscurePassword = !_obscurePassword),
               child: Icon(
@@ -185,7 +201,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
           ),
-          onSubmitted: (_) => _handleLogin(),
+          onSubmitted: (_) => _handleSubmit(),
         ),
       ],
     );
@@ -203,86 +219,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Widget _buildActions() {
-    return Column(
-      children: [
-        // Primary login button
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _isLoading ? null : _handleLogin,
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.onPrimary,
-                    ),
-                  )
-                : const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Log In to Archive'),
-                      SizedBox(width: 12),
-                      Icon(Icons.login, size: 20),
-                    ],
-                  ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        // Divider
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                height: 1,
-                color: AppColors.outlineVariant.withAlpha(51),
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _handleSubmit,
+        child: _isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.onPrimary,
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(_isSignUpMode ? 'Create Account' : 'Log In to Archive'),
+                  const SizedBox(width: 12),
+                  Icon(_isSignUpMode ? Icons.person_add : Icons.login, size: 20),
+                ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: Text(
-                'OR ENTRY VIA',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.outlineVariant,
-                      letterSpacing: 2,
-                    ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                height: 1,
-                color: AppColors.outlineVariant.withAlpha(51),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xl),
-        // SSO buttons
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.school, size: 18),
-                label: const Text('University\nSSO', textAlign: TextAlign.center),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.lg),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.public, size: 18),
-                label: const Text('Global ID'),
-              ),
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildCreateAccount() {
+  Widget _buildToggleMode() {
     return Container(
       padding: const EdgeInsets.only(top: AppSpacing.xxl),
       decoration: BoxDecoration(
@@ -293,18 +255,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Row(
         children: [
           Text(
-            'New to the\ncollection?',
+            _isSignUpMode ? 'Already have\nan account?' : 'New to the\ncollection?',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),
           ),
           const SizedBox(width: AppSpacing.lg),
           GestureDetector(
-            onTap: () {}, // Placeholder
+            onTap: () => setState(() => _isSignUpMode = !_isSignUpMode),
             child: Row(
               children: [
                 Text(
-                  'Create an\naccount',
+                  _isSignUpMode ? 'Log in\ninstead' : 'Create an\naccount',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         color: AppColors.secondary,
                       ),

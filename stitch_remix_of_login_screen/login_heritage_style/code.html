@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Archivist | Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-fixed": "#261900",
+                        "on-primary-fixed": "#00201a",
+                        "on-tertiary-container": "#cca89c",
+                        "tertiary-fixed-dim": "#e4beb2",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#ebe8df",
+                        "surface-container-low": "#f6f3ea",
+                        "inverse-surface": "#31312b",
+                        "tertiary-fixed": "#ffdbce",
+                        "primary-fixed-dim": "#94d3c1",
+                        "surface-container-highest": "#e5e2da",
+                        "primary-fixed": "#afefdd",
+                        "background": "#fcf9f0",
+                        "on-secondary-fixed-variant": "#5d4201",
+                        "tertiary": "#3e271f",
+                        "surface-tint": "#29695b",
+                        "inverse-primary": "#94d3c1",
+                        "error": "#ba1a1a",
+                        "surface": "#fcf9f0",
+                        "outline": "#707975",
+                        "tertiary-container": "#573d34",
+                        "on-secondary-container": "#785a1a",
+                        "on-tertiary-fixed-variant": "#5b4137",
+                        "surface-container": "#f1eee5",
+                        "on-primary-fixed-variant": "#065043",
+                        "secondary-container": "#fed488",
+                        "on-surface": "#1c1c17",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#00342b",
+                        "surface-variant": "#e5e2da",
+                        "on-surface-variant": "#3f4945",
+                        "surface-bright": "#fcf9f0",
+                        "on-tertiary": "#ffffff",
+                        "outline-variant": "#bfc9c4",
+                        "on-secondary": "#ffffff",
+                        "secondary": "#775a19",
+                        "inverse-on-surface": "#f4f1e8",
+                        "on-background": "#1c1c17",
+                        "on-primary-container": "#7ebdac",
+                        "primary-container": "#004d40",
+                        "surface-dim": "#dddad1",
+                        "on-tertiary-fixed": "#2b160f",
+                        "secondary-fixed": "#ffdea5",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#e9c176"
+                    },
+                    fontFamily: {
+                        "headline": ["Noto Serif"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .mashrabiya-overlay {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l15 15-15 15-15-15L30 0zm0 60l15-15-15-15-15 15 15 15zM0 30l15 15 15-15-15-15L0 30zm60 0l-15 15-15-15 15-15 15 15z' fill='%23004d40' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+        .scholarly-arch {
+            border-radius: 120px 120px 24px 24px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body min-h-screen flex flex-col relative overflow-hidden">
+<!-- Decorative Watermark Pattern -->
+<div class="fixed inset-0 mashrabiya-overlay pointer-events-none"></div>
+<!-- Header (Based on Shared Components JSON) -->
+<header class="relative z-10 w-full">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-xl mx-auto">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#004d40] text-3xl" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<h1 class="font-serif text-2xl font-bold tracking-tight italic text-[#004d40]">The Archivist</h1>
+</div>
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center px-6 py-12 relative z-10">
+<div class="grid grid-cols-1 lg:grid-cols-2 max-w-6xl w-full gap-16 items-center">
+<!-- Left Side: Visual/Branding -->
+<div class="hidden lg:flex flex-col gap-8">
+<div class="relative">
+<div class="w-full h-[500px] scholarly-arch overflow-hidden bg-primary-container">
+<img alt="Scholarly Library" class="w-full h-full object-cover mix-blend-overlay opacity-60" data-alt="Moody atmospheric shot of an ancient library with sunbeams filtering through arched windows, dust motes dancing in the light over old manuscripts" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHMDK8bN5TAfp8ZReUrGFDwZm7O_6pE7QwDDQpgp4zjrFvrYrSXQUB1AIW2fcHokQyUQEqHjAmDUDv0xsx8dnb3PyFLV5h_DfaUC9SdfANpGzXyIn9131dEB_WZz9RpThuYUnk1xVKyVikSavQ-KWc7nG6leUX4gidzaY7zPYEWps8XCcpjP-LP0DLgGsZBRAf2woujheyuWpqxMK8g2mYwpkJdSXl1hS9Af7JzTK4GrYchUJN6Nqk7gQ3d6RgdpXAo4iQJZf365Lz"/>
+</div>
+<!-- Overlapping Card Fragment -->
+<div class="absolute -bottom-6 -right-6 bg-surface-container-low p-8 scholarly-arch shadow-xl border border-outline-variant/10 max-w-[300px]">
+<p class="font-headline italic text-secondary text-lg leading-relaxed">
+                            "Preserving the wisdom of the past to illuminate the path of the future."
+                        </p>
+</div>
+</div>
+</div>
+<!-- Right Side: Login Form -->
+<div class="flex flex-col">
+<div class="mb-12">
+<h2 class="font-headline text-5xl text-primary font-bold mb-4">Welcome Back</h2>
+<p class="text-on-surface-variant text-lg max-w-md">Continue your journey through the manuscripts. Your collection awaits your scholarly touch.</p>
+</div>
+<form class="space-y-8 max-w-md">
+<!-- Email Field -->
+<div class="group">
+<label class="block text-sm font-semibold text-on-surface-variant mb-1 transition-colors group-focus-within:text-secondary uppercase tracking-widest" for="email">
+                            Email or Student ID
+                        </label>
+<div class="relative">
+<input class="w-full bg-transparent border-b-2 border-outline-variant/30 py-3 px-0 focus:outline-none focus:border-secondary text-on-surface text-lg placeholder:text-outline-variant transition-all" id="email" name="email" placeholder="archivist@scholarly.edu" type="text"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="group">
+<div class="flex justify-between items-end mb-1">
+<label class="block text-sm font-semibold text-on-surface-variant transition-colors group-focus-within:text-secondary uppercase tracking-widest" for="password">
+                                Password
+                            </label>
+<a class="text-xs text-secondary hover:underline font-semibold" href="#">Forgot Key?</a>
+</div>
+<div class="relative">
+<input class="w-full bg-transparent border-b-2 border-outline-variant/30 py-3 px-0 focus:outline-none focus:border-secondary text-on-surface text-lg placeholder:text-outline-variant transition-all" id="password" name="password" placeholder="••••••••••••" type="password"/>
+<span class="material-symbols-outlined absolute right-0 top-3 text-outline-variant cursor-pointer hover:text-secondary">visibility</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="pt-6 space-y-6">
+<button class="w-full bg-primary-container text-white font-semibold py-5 rounded-xl text-lg hover:bg-primary transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-3" type="submit">
+<span>Log In to Archive</span>
+<span class="material-symbols-outlined text-xl">login</span>
+</button>
+<div class="flex items-center gap-4 py-2">
+<div class="h-[1px] flex-grow bg-outline-variant/20"></div>
+<span class="text-outline-variant text-xs font-bold uppercase tracking-widest">or entry via</span>
+<div class="h-[1px] flex-grow bg-outline-variant/20"></div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-outline-variant/30 text-on-surface hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-lg">school</span>
+<span class="text-sm font-semibold">University SSO</span>
+</button>
+<button class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-outline-variant/30 text-on-surface hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-lg">public</span>
+<span class="text-sm font-semibold">Global ID</span>
+</button>
+</div>
+</div>
+</form>
+<div class="mt-16 pt-8 border-t border-outline-variant/10 max-w-md">
+<p class="text-on-surface-variant flex items-center gap-2">
+                        New to the collection? 
+                        <a class="text-secondary font-bold hover:underline inline-flex items-center gap-1" href="#">
+                            Create an account
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Decor (Optional Mashrabiya element) -->
+<footer class="mt-auto py-8 text-center opacity-40">
+<p class="font-headline italic text-xs tracking-widest text-primary">Est. 2024 — Al-Andalus Modern</p>
+</footer>
+<!-- Script to ensure Material Icons render properly -->
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+    </style>
+</body></html>

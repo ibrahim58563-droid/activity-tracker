@@ -7,7 +7,6 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/widgets/top_app_bar.dart';
 import '../../auth/domain/auth_providers.dart';
 import '../domain/student_providers.dart';
-import '../domain/models/student.dart';
 import 'widgets/student_card.dart';
 import 'widgets/class_insights_card.dart';
 
